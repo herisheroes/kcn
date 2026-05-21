@@ -1,0 +1,1299 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kurir Cilik Nusantara</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Fredoka', sans-serif;
+      overflow: hidden;
+    }
+    
+    .game-container {
+      background-image: url('background.jpg');
+      background-size: cover;
+      background-position: top center;
+      background-repeat: no-repeat;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+    
+    .btn-success {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    
+    .btn-danger {
+      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    }
+    
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    
+    .badge-item {
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .badge-item:hover {
+      transform: scale(1.1);
+    }
+    
+    .badge-locked {
+      filter: grayscale(100%) opacity(0.5);
+      cursor: not-allowed !important;
+    }
+    
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    
+    .blink {
+      animation: blink 1s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+    
+    .heart {
+      color: #ff6b6b;
+      font-size: 1.5rem;
+      margin: 0 2px;
+    }
+    
+    .level-card {
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .level-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    
+    .level-locked {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      padding: 15px 25px;
+      border-radius: 10px;
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      animation: fadeIn 0.3s ease;
+      padding: 1rem;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 30px;
+      padding: 40px;
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: slideUp 0.4s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slideUp {
+      from {
+        transform: translateY(100px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    .success-emoji, .fail-emoji {
+      font-size: 100px;
+      animation: bounce 0.6s ease;
+    }
+    
+    .success-image, .fail-image {
+      width: 150px;
+      height: 150px;
+      object-fit: contain;
+      margin: 0 auto;
+      animation: bounce 0.6s ease;
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      25% { transform: translateY(-30px); }
+      50% { transform: translateY(-15px); }
+      75% { transform: translateY(-7px); }
+    }
+    
+    .badge-modal-icon {
+      font-size: 120px;
+      margin: 20px 0;
+      animation: bounce 0.8s ease;
+    }
+
+    /* Game UI Overlay styles */
+    .game-hud {
+      background: rgba(0, 0, 0, 0.8);
+      border: 2px solid #667eea;
+      border-radius: 12px;
+      color: white;
+      padding: 10px;
+      backdrop-filter: blur(5px);
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="h-full">
+  <div id="app" class="w-full h-full game-container relative"></div>
+  
+  <footer class="fixed bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white py-2 px-4 flex justify-between items-center text-sm z-50 pointer-events-none">
+   <span id="footerText">Game design by @herisheroes</span>
+   <div class="flex gap-4 pointer-events-auto">
+     <a href="https://www.youtube.com/@herisheroes" target="_blank" rel="noopener noreferrer" class="hover:text-red-400 transition-colors"> <i class="fab fa-youtube text-xl"></i> </a> 
+     <a href="https://www.tiktok.com/@herisheroes" target="_blank" rel="noopener noreferrer" class="hover:text-cyan-400 transition-colors"> <i class="fab fa-tiktok text-xl"></i> </a> 
+     <a href="https://www.instagram.com/herisheroes" target="_blank" rel="noopener noreferrer" class="hover:text-pink-400 transition-colors"> <i class="fab fa-instagram text-xl"></i> </a>
+   </div>
+  </footer>
+  
+  <script>
+    const defaultConfig = {
+      game_title: "Kurir Cilik Nusantara",
+      start_button_text: "MULAI",
+      login_title: "Mulai Bermain",
+      footer_text: "Game design by @herisheroes",
+      font_family: "Fredoka",
+      font_size: 16
+    };
+
+    let currentUser = null;
+    let gameState = {
+      screen: 'splash',
+      level: 1,
+      difficulty: 'mudah', // mudah, normal, sulit
+      lives: 3,
+      currentRoute: [],
+      visitedNodes: new Set(),
+      fuel: 100,
+      maxFuel: 100,
+      timer: 120,
+      nodes: [],
+      edges: [],
+      selectedNode: null,
+      showDistanceLabels: false,
+      startTime: 0,
+      startLives: 3
+    };
+
+    const PROVINCES = [
+      "Aceh", "Sumatera Utara", "Sumatera Barat", "Riau", "Jambi", "Sumatera Selatan",
+      "Bengkulu", "Lampung", "Kepulauan Bangka Belitung", "Kepulauan Riau", "DKI Jakarta",
+      "Jawa Barat", "Jawa Tengah", "DI Yogyakarta", "Jawa Timur", "Banten", "Bali",
+      "Nusa Tenggara Barat", "Nusa Tenggara Timur", "Kalimantan Barat", "Kalimantan Tengah",
+      "Kalimantan Selatan", "Kalimantan Timur", "Kalimantan Utara", "Sulawesi Utara",
+      "Sulawesi Tengah", "Sulawesi Selatan", "Sulawesi Tenggara", "Gorontalo", "Sulawesi Barat",
+      "Maluku", "Maluku Utara", "Papua Barat", "Papua", "Papua Tengah", "Papua Pegunungan",
+      "Papua Selatan", "Papua Barat Daya"
+    ];
+
+    const BADGES = [
+      { id: 1, name: "Pemula", icon: "🎯", condition: "Selesaikan Level 1", requirement: { type: 'level', value: 1 } },
+      { id: 2, name: "Penjelajah", icon: "🗺️", condition: "Selesaikan 5 Level", requirement: { type: 'level', value: 5 } },
+      { id: 3, name: "Ahli Rute", icon: "🧭", condition: "Selesaikan 10 Level", requirement: { type: 'level', value: 10 } },
+      { id: 4, name: "Master Kurir", icon: "📦", condition: "Selesaikan 20 Level", requirement: { type: 'level', value: 20 } },
+      { id: 5, name: "Penguasa Nusantara", icon: "👑", condition: "Selesaikan Semua Level", requirement: { type: 'level', value: 38 } },
+      { id: 6, name: "Hemat Bensin", icon: "⛽", condition: "Selesaikan 1 Level dengan Bensin Sisa ≤5%", requirement: { type: 'fuel', value: 5 } },
+      { id: 7, name: "Kilat", icon: "⚡", condition: "Selesaikan 1 Level dalam 60 Detik", requirement: { type: 'time', value: 60 } },
+      { id: 8, name: "Sempurna", icon: "⭐", condition: "Selesaikan 1 Level Tanpa Kehilangan Nyawa", requirement: { type: 'perfect', value: 1 } },
+      { id: 9, name: "Konsisten", icon: "🎖️", condition: "Selesaikan 5 Level Berturut-turut", requirement: { type: 'streak', value: 5 } },
+      { id: 10, name: "Legenda", icon: "🏆", condition: "Raih Skor Total 100000", requirement: { type: 'score', value: 100000 } }
+    ];
+
+    function generateLevel(levelNum) {
+      const difficulty = Math.floor((levelNum - 1) / 5) + 1;
+      const numVillages = 3 + difficulty;
+      const missions = 3 + Math.floor(levelNum / 5);
+      
+      const nodes = [{ id: 0, x: 0, y: 0, type: 'post', name: 'Pos Pusat' }];
+      const edges = [];
+      
+      const minRadius = 150;
+      const maxRadius = 280;
+      const minDistance = 100;
+      
+      for (let i = 0; i < numVillages; i++) {
+        let x, y, attempts = 0;
+        let validPosition = false;
+        
+        while (!validPosition && attempts < 50) {
+          const angle = Math.random() * Math.PI * 2;
+          const radius = minRadius + Math.random() * (maxRadius - minRadius);
+          x = Math.cos(angle) * radius;
+          y = Math.sin(angle) * radius;
+          
+          validPosition = true;
+          for (const node of nodes) {
+            const dist = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
+            if (dist < minDistance) {
+              validPosition = false;
+              break;
+            }
+          }
+          attempts++;
+        }
+        
+        nodes.push({
+          id: i + 1,
+          x: x || Math.cos(i * Math.PI * 2 / numVillages) * 200,
+          y: y || Math.sin(i * Math.PI * 2 / numVillages) * 200,
+          type: 'village',
+          name: `Desa ${String.fromCharCode(65 + i)}`
+        });
+      }
+      
+      const villageIds = [];
+      for (let i = 1; i <= numVillages; i++) {
+        villageIds.push(i);
+      }
+      
+      for (let i = villageIds.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [villageIds[i], villageIds[j]] = [villageIds[j], villageIds[i]];
+      }
+      
+      const correctPath = [0, ...villageIds, 0];
+      
+      let totalDistance = 0;
+      for (let i = 0; i < correctPath.length - 1; i++) {
+        const from = correctPath[i];
+        const to = correctPath[i + 1];
+        const distance = 10 + Math.floor(Math.random() * 15);
+        totalDistance += distance;
+        edges.push({ from, to, distance });
+      }
+      
+      for (let i = 1; i <= numVillages; i++) {
+        for (let j = i + 1; j <= numVillages; j++) {
+          if (!edges.some(e => (e.from === i && e.to === j) || (e.from === j && e.to === i))) {
+            const wrongDistance = totalDistance + 10 + Math.floor(Math.random() * 20);
+            edges.push({ from: i, to: j, distance: wrongDistance });
+          }
+        }
+      }
+      
+      return {
+        nodes,
+        edges,
+        correctPath,
+        totalFuel: totalDistance + 5,
+        missions,
+        timeLimit: 120 + (difficulty * 20)
+      };
+    }
+
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => { toast.remove(); }, 3000);
+    }
+
+    window.showCPModal = function() {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal-content">
+          <h2 class="text-3xl font-bold text-indigo-600 mb-6 drop-shadow-sm">CP & Tujuan Pembelajaran</h2>
+          <div class="text-left space-y-4 text-gray-700">
+            <div class="bg-indigo-50 p-5 rounded-xl border border-indigo-200 shadow-sm">
+                <h3 class="font-bold text-xl mb-2 text-indigo-800">1.1. Berpikir Komputasional</h3>
+                <p class="leading-relaxed">Memahami permasalahan sederhana dalam kehidupan sehari-hari, menerapkan pemecahan masalah secara sistematis, serta menuliskan instruksi logis dan terstruktur menggunakan sekumpulan kosakata atau simbol.</p>
+            </div>
+            <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-200 shadow-sm">
+                <h3 class="font-bold text-xl mb-3 text-emerald-800">Tujuan Pembelajaran</h3>
+                <ul class="list-disc pl-5 space-y-3">
+                    <li><strong class="text-emerald-700">Computational Thinking:</strong> Melatih dekomposisi dan pengenalan pola jalur.</li>
+                    <li><strong class="text-emerald-700">Wawasan Nusantara:</strong> Mengenal 38 Provinsi Indonesia sebagai level permainan.</li>
+                    <li><strong class="text-emerald-700">Optimasi & Algoritma:</strong> Mencari rute paling efisien (terpendek) sebelum sumber daya habis.</li>
+                    <li><strong class="text-emerald-700">Karakter:</strong> Melatih mental pantang menyerah (debugging) saat gagal sampai tujuan.</li>
+                </ul>
+            </div>
+          </div>
+          <button onclick="this.closest('.modal-overlay').remove()" class="btn-primary text-white px-8 py-3 rounded-lg text-lg font-bold mt-8 w-full hover:scale-105 transition-transform">TUTUP</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    };
+
+    window.showPengembangModal = function() {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal-content text-center">
+          <h2 class="text-3xl font-bold text-indigo-600 mb-6 drop-shadow-sm">Profil Pengembang</h2>
+          <img src="ris.png" alt="Heris Apriadi" class="w-40 h-40 rounded-full mx-auto mb-5 border-4 border-indigo-200 shadow-xl object-cover bg-transparent" onerror="this.src='go.png'">
+          <h3 class="text-2xl font-bold text-gray-800">Heris Apriadi, S.Pd.</h3>
+          <p class="text-lg text-gray-600 mt-2 font-medium">Guru SDN 3 Sukahurip</p>
+          <p class="text-gray-500">Kecamatan Cihaurbeuti, Kabupaten Ciamis</p>
+          
+          <div class="flex justify-center items-center gap-6 mt-8 mb-2">
+            <a href="https://www.tiktok.com/@herisheroes" target="_blank" rel="noopener noreferrer" class="hover:scale-110 transition-transform drop-shadow-md block">
+              <img src="tik.png" alt="TikTok" class="w-12 h-12 object-contain bg-transparent">
+            </a>
+            <a href="https://www.instagram.com/herisheroes" target="_blank" rel="noopener noreferrer" class="hover:scale-110 transition-transform drop-shadow-md block">
+              <img src="ig.png" alt="Instagram" class="w-12 h-12 object-contain bg-transparent">
+            </a>
+            <a href="https://www.youtube.com/@herisheroes" target="_blank" rel="noopener noreferrer" class="hover:scale-110 transition-transform drop-shadow-md block">
+              <img src="yt.png" alt="YouTube" class="w-12 h-12 object-contain bg-transparent">
+            </a>
+            <a href="https://www.facebook.com/herisheroes" target="_blank" rel="noopener noreferrer" class="hover:scale-110 transition-transform drop-shadow-md block">
+              <img src="fb.png" alt="Facebook" class="w-12 h-12 object-contain bg-transparent">
+            </a>
+          </div>
+
+          <button onclick="this.closest('.modal-overlay').remove()" class="btn-primary text-white px-8 py-3 rounded-lg text-lg font-bold mt-6 w-full hover:scale-105 transition-transform">TUTUP</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    };
+
+    function showSuccessLoginModal() {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal-content">
+          <div class="success-emoji">🎉</div>
+          <h2 style="font-size: 36px; font-weight: bold; color: #10b981; margin: 20px 0;">Selamat Datang!</h2>
+          <p style="font-size: 20px; color: #64748b; margin: 10px 0;">Mari kita mulai petualangan, <strong>${currentUser.username}</strong>!</p>
+          <button onclick="this.closest('.modal-overlay').remove()" class="btn-primary text-white px-8 py-3 rounded-lg text-lg font-bold" style="margin-top: 20px;">
+            MULAI
+          </button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function showErrorModal(message) {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal-content">
+          <div class="fail-emoji">⚠️</div>
+          <h2 style="font-size: 36px; font-weight: bold; color: #ef4444; margin: 20px 0;">Terjadi Kesalahan!</h2>
+          <p style="font-size: 20px; color: #64748b; margin: 10px 0;">${message}</p>
+          <button onclick="this.closest('.modal-overlay').remove()" class="btn-primary text-white px-8 py-3 rounded-lg text-lg font-bold" style="margin-top: 20px;">
+            TUTUP
+          </button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    window.openBadgeModal = function(badgeId) {
+      const badge = BADGES.find(b => b.id === badgeId);
+      const earnedBadges = currentUser.badges ? JSON.parse(currentUser.badges) : [];
+      
+      if (badge && earnedBadges.includes(badgeId)) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+          <div class="modal-content">
+            <div class="badge-modal-icon">${badge.icon}</div>
+            <h2 style="font-size: 36px; font-weight: bold; color: #7c3aed; margin: 20px 0;">${badge.name}</h2>
+            <div style="background: #f3e8ff; border-radius: 15px; padding: 20px; margin: 20px 0;">
+              <p style="font-size: 18px; color: #2d3748; font-weight: 600;">
+                ${badge.condition}
+              </p>
+            </div>
+            <p style="font-size: 16px; color: #10b981; font-weight: bold; margin: 15px 0;">
+              ✅ Lencana Sudah Diraih!
+            </p>
+            <button onclick="this.closest('.modal-overlay').remove()" class="btn-primary text-white px-8 py-3 rounded-lg text-lg font-bold" style="margin-top: 20px;">
+              TUTUP
+            </button>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+    };
+
+    function checkBadges(user, levelStats) {
+      const earnedBadges = user.badges ? JSON.parse(user.badges) : [];
+      const newBadges = [];
+      
+      BADGES.forEach(badge => {
+        if (earnedBadges.includes(badge.id)) return;
+        
+        let earned = false;
+        switch (badge.requirement.type) {
+          case 'level':
+            earned = user.current_level >= badge.requirement.value;
+            break;
+          case 'score':
+            earned = user.total_score >= badge.requirement.value;
+            break;
+          case 'fuel':
+            if (levelStats && levelStats.fuelPercent <= badge.requirement.value) earned = true;
+            break;
+          case 'time':
+            if (levelStats && levelStats.timeTaken <= badge.requirement.value) earned = true;
+            break;
+          case 'perfect':
+            if (levelStats && levelStats.isPerfect) earned = true;
+            break;
+          case 'streak':
+            const completedMissions = user.completed_missions ? JSON.parse(user.completed_missions) : [];
+            if (completedMissions.length >= badge.requirement.value) earned = true;
+            break;
+        }
+        
+        if (earned) {
+          earnedBadges.push(badge.id);
+          newBadges.push(badge);
+        }
+      });
+      
+      if (newBadges.length > 0) {
+        user.badges = JSON.stringify(earnedBadges);
+        newBadges.forEach(badge => {
+          showToast(`🎉 Lencana Baru: ${badge.name}!`, 'success');
+        });
+      }
+    }
+
+    function renderSplash() {
+      const config = window.elementSdk ? window.elementSdk.config : defaultConfig;
+      return `
+        <div class="w-full h-full flex flex-col items-center justify-center relative pt-20">
+          
+          <div class="absolute top-4 left-0 w-full flex justify-center gap-2 sm:gap-4 z-50 px-2 pointer-events-none">
+            <img src="kemen.png" class="h-12 sm:h-20 bg-transparent object-contain drop-shadow-md" alt="Kemendikdasmen">
+            <img src="rp.png" class="h-12 sm:h-20 bg-transparent object-contain drop-shadow-md" alt="Rumah Pendidikan">
+            <img src="rm.png" class="h-12 sm:h-20 bg-transparent object-contain drop-shadow-md" alt="Ruang Murid">
+          </div>
+
+          <div class="text-center pulse z-10 w-full px-4">
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 text-white drop-shadow-2xl tracking-wide" style="color: #ffffff; text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 0 20px rgba(0,0,0,0.8), 0 0 40px rgba(102,126,234,0.6);">
+              ${config.game_title}
+            </h1>
+            <div class="flex flex-col gap-4 max-w-sm mx-auto mt-4">
+                <button onclick="goToAuth()" class="btn-primary text-white px-12 py-4 rounded-full text-2xl font-bold shadow-2xl border-4 border-indigo-300 hover:scale-105 transition-transform duration-300">
+                  ${config.start_button_text}
+                </button>
+                <div class="grid grid-cols-1 gap-3 mt-4">
+                  <button onclick="showCPModal()" class="btn-success text-white px-6 py-3 rounded-full text-lg md:text-xl font-bold shadow-lg hover:scale-105 transition-transform">
+                    📖 CP & Tujuan
+                  </button>
+                  <button onclick="showPengembangModal()" class="bg-gradient-to-r from-orange-400 to-orange-600 text-white px-6 py-3 rounded-full text-lg md:text-xl font-bold shadow-lg hover:scale-105 transition-transform">
+                    👨‍💻 Pengembang
+                  </button>
+                </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAuth() {
+      const config = window.elementSdk ? window.elementSdk.config : defaultConfig;
+      return `
+        <div class="w-full h-full flex items-center justify-center p-8">
+          <div class="card p-8 max-w-md w-full relative z-10">
+            <h2 class="text-3xl font-bold mb-6 text-center" style="color: ${config.text_color};">${config.login_title}</h2>
+            <form id="loginForm" class="space-y-4">
+              <div>
+                <label class="block font-semibold mb-2" style="color: ${config.text_color};">Nama Pemain</label>
+                <input type="text" id="loginUsername" placeholder="Ketik nama panggilanmu" required class="w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:border-indigo-500 text-lg">
+              </div>
+              <button type="submit" class="btn-primary text-white w-full py-3 rounded-lg text-xl font-bold mt-4 shadow-lg hover:scale-105 transition-transform">
+                MULAI BERMAIN
+              </button>
+            </form>
+          </div>
+        </div>
+      `;
+    }
+
+    function attachAuthListener() {
+      const form = document.getElementById('loginForm');
+      if(form) {
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const username = document.getElementById('loginUsername').value;
+          if (!username.trim()) {
+            showErrorModal('Nama tidak boleh kosong!');
+            return;
+          }
+          currentUser = {
+            username: username,
+            current_level: 1,
+            total_score: 0,
+            badges: JSON.stringify([]),
+            completed_missions: JSON.stringify([]),
+            level_scores: JSON.stringify({}),
+            created_at: new Date().toISOString()
+          };
+          gameState.screen = 'menu';
+          gameState.level = 1;
+          render();
+          showSuccessLoginModal();
+        });
+      }
+    }
+
+    function renderMenu() {
+      const earnedBadges = currentUser.badges ? JSON.parse(currentUser.badges) : [];
+      return `
+        <div class="w-full h-full overflow-y-auto p-4 md:p-8 pb-20 relative z-10">
+          <div class="max-w-6xl mx-auto">
+            <h1 class="text-3xl md:text-5xl font-bold text-center mb-6 md:mb-8 text-white drop-shadow-xl" style="text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, 0 0 15px rgba(0,0,0,0.9), 0 0 30px rgba(245,87,108,0.6);">Menu Utama</h1>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-8">
+              <div class="card p-4 md:p-6" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); color: white; border: 3px solid #3b82f6; box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);">
+                <h2 class="text-xl md:text-2xl font-bold mb-3 md:mb-4 text-white drop-shadow-md">👤 Profil Pemain</h2>
+                <div class="flex gap-4 items-center">
+                  <div class="flex-1 space-y-2 text-base md:text-lg">
+                    <p><strong>Username:</strong> ${currentUser.username}</p>
+                    <p><strong>Level Tertinggi:</strong> ${currentUser.current_level}</p>
+                    <p><strong>Total Skor:</strong> <span class="text-yellow-300 font-bold drop-shadow-md">${currentUser.total_score}</span></p>
+                  </div>
+                  <div class="flex-shrink-0">
+                    <img src="go.png" alt="Karakter Kurir" class="w-24 h-24 md:w-32 md:h-32 object-contain drop-shadow-xl" onerror="this.style.display='none';">
+                  </div>
+                </div>
+              </div>
+              
+              <div class="card p-4 md:p-6" style="background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%); color: white; border: 3px solid #a855f7; box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);">
+                <h2 class="text-xl md:text-2xl font-bold mb-3 md:mb-4 text-white drop-shadow-md">🏅 Lencana (${earnedBadges.length}/${BADGES.length})</h2>
+                <div class="grid grid-cols-5 gap-2 md:gap-3">
+                  ${BADGES.map(badge => {
+                    const isEarned = earnedBadges.includes(badge.id);
+                    return `
+                      <div class="badge-item text-center ${isEarned ? '' : 'badge-locked'}" title="${badge.condition}" onclick="${isEarned ? `openBadgeModal(${badge.id})` : ''}">
+                        <div class="text-3xl md:text-4xl mb-1 drop-shadow-md">${badge.icon}</div>
+                        <div class="text-[10px] md:text-xs font-bold text-white leading-tight">${badge.name}</div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            </div>
+            
+            <div class="text-center mb-8 bg-black/40 p-6 rounded-3xl border border-white/20 backdrop-blur-sm">
+              <h3 class="text-white text-xl md:text-3xl font-bold mb-6 drop-shadow-lg tracking-wide">Pilih Tingkat Kesulitan Paket:</h3>
+              <div class="flex flex-col md:flex-row justify-center gap-4 max-w-4xl mx-auto px-2">
+                <button onclick="goToLevelSelect('mudah')" class="flex-1 btn-success text-white py-4 rounded-2xl text-xl font-bold shadow-xl pulse hover:scale-105 transition-transform" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: 3px solid #6ee7b7;">
+                  📦 Level Mudah<br><span class="text-sm font-normal text-emerald-100">(Level 1 - 12)</span>
+                </button>
+                <button onclick="goToLevelSelect('normal')" class="flex-1 btn-primary text-white py-4 rounded-2xl text-xl font-bold shadow-xl pulse hover:scale-105 transition-transform" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: 3px solid #fcd34d;">
+                  📦 Level Sedang<br><span class="text-sm font-normal text-amber-100">(Level 13 - 24)</span>
+                </button>
+                <button onclick="goToLevelSelect('sulit')" class="flex-1 btn-danger text-white py-4 rounded-2xl text-xl font-bold shadow-xl pulse hover:scale-105 transition-transform" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); border: 3px solid #fca5a5;">
+                  📦 Level Sulit<br><span class="text-sm font-normal text-red-100">(Level 25 - 38)</span>
+                </button>
+              </div>
+            </div>
+            
+            <div class="max-w-4xl mx-auto mb-6">
+              <div class="card p-4 md:p-6" style="background: linear-gradient(135deg, #0f766e 0%, #115e59 100%); color: white; border: 3px solid #2dd4bf; box-shadow: 0 8px 24px rgba(20, 184, 166, 0.4);">
+                <h2 class="text-xl md:text-2xl font-bold mb-3 md:mb-4 text-white drop-shadow-md">📋 Cara Bermain</h2>
+                <div class="space-y-3 text-sm md:text-base text-teal-50">
+                  <div class="flex items-start gap-2">
+                    <span class="font-bold bg-teal-600 rounded-full w-6 h-6 flex items-center justify-center text-sm flex-shrink-0 border-2 border-teal-200">1</span>
+                    <p><strong>Tujuan:</strong> Kirim paket ke semua desa dan kembali ke Pos Pusat</p>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <span class="font-bold bg-teal-600 rounded-full w-6 h-6 flex items-center justify-center text-sm flex-shrink-0 border-2 border-teal-200">2</span>
+                    <p><strong>Klik Desa:</strong> Pilih rute dengan klik desa yang terhubung</p>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <span class="font-bold bg-teal-600 rounded-full w-6 h-6 flex items-center justify-center text-sm flex-shrink-0 border-2 border-teal-200">3</span>
+                    <p><strong>Perhatikan Bensin:</strong> Setiap perjalanan butuh bensin sesuai jarak</p>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <span class="font-bold bg-teal-600 rounded-full w-6 h-6 flex items-center justify-center text-sm flex-shrink-0 border-2 border-teal-200">4</span>
+                    <p><strong>Kirim Paket:</strong> Klik tombol <strong class="text-yellow-300">"Kirim"</strong> untuk menyelesaikan level</p>
+                  </div>
+                  <div class="bg-white/10 p-3 rounded-xl mt-3 border border-teal-400">
+                    <p class="font-bold text-yellow-300 drop-shadow-md">⚠️ Tips:</p>
+                    <p class="text-sm">Cek info jarak di panel sebelah kiri sebelum memilih rute. Rute terpendek akan menghasilkan sisa bensin dan waktu paling banyak = Skor Tertinggi!</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="text-center mt-8">
+              <button onclick="logout()" class="btn-danger text-white px-8 md:px-12 py-3 md:py-4 rounded-xl text-lg md:text-xl font-bold shadow-xl">
+                KELUAR AKUN
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderLevelSelect() {
+      let startIndex = 0, endIndex = 12;
+      let titleBg = 'from-emerald-400 to-emerald-600';
+      let titleText = 'Kategori: Level Mudah';
+      let effectiveCurrentLevel = currentUser.current_level;
+      
+      if (gameState.difficulty === 'normal') {
+          startIndex = 12; endIndex = 24;
+          titleBg = 'from-amber-400 to-amber-600';
+          titleText = 'Kategori: Level Sedang';
+          effectiveCurrentLevel = Math.max(currentUser.current_level, 13);
+      } else if (gameState.difficulty === 'sulit') {
+          startIndex = 24; endIndex = 38;
+          titleBg = 'from-red-400 to-red-600';
+          titleText = 'Kategori: Level Sulit';
+          effectiveCurrentLevel = Math.max(currentUser.current_level, 25);
+      }
+      
+      const filteredProvinces = PROVINCES.slice(startIndex, endIndex);
+
+      return `
+        <div class="w-full h-full overflow-y-auto p-4 md:p-8 pb-20 relative z-10">
+          <div class="max-w-6xl mx-auto">
+            <h1 class="text-5xl font-bold text-center mb-4 text-white drop-shadow-xl" style="text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 0 20px rgba(0,0,0,0.9);">Pilih Provinsi</h1>
+            
+            <div class="text-center mb-8">
+                <span class="inline-block bg-gradient-to-r ${titleBg} text-white px-8 py-2 rounded-full text-2xl font-bold shadow-lg border-2 border-white/50">
+                    ${titleText}
+                </span>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              ${filteredProvinces.map((province, idx) => {
+                const levelNum = startIndex + idx + 1;
+                // Jika belum mencapai level ini, maka dikunci. Tetapi level pembuka dari kategori ini selalu terbuka.
+                const isLocked = levelNum > effectiveCurrentLevel;
+                const imageUrl = `${levelNum}.png`;
+                return `
+                  <div class="level-card card p-0 overflow-hidden ${isLocked ? 'level-locked' : ''} border-4 ${isLocked ? 'border-gray-500' : 'border-indigo-400 hover:border-yellow-400'}"
+                       onclick="${isLocked ? '' : `startLevel(${levelNum})`}"
+                       style="aspect-ratio: 1/1;">
+                    <div class="relative w-full h-full bg-indigo-50">
+                      <div class="w-full h-full bg-center bg-contain bg-no-repeat" style="background-image: url('${imageUrl}');"></div>
+                      ${isLocked ? '<div class="absolute inset-0 bg-gray-900 bg-opacity-80 flex flex-col items-center justify-center text-white backdrop-blur-sm"><div class="text-5xl mb-2">🔒</div><div class="font-bold text-lg">Terkunci</div></div>' : ''}
+                      <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent p-3 pt-6 text-white text-center">
+                        <div class="font-bold text-lg text-yellow-300 drop-shadow-md">Level ${levelNum}</div>
+                        <div class="text-sm font-medium leading-tight">${province}</div>
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+            
+            <div class="text-center pb-8">
+              <button onclick="goToMenu()" class="btn-primary text-white px-10 py-4 rounded-xl text-xl font-bold shadow-xl border-2 border-indigo-300">
+                KEMBALI KE MENU
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderGame() {
+      const levelData = generateLevel(gameState.level);
+      gameState.nodes = levelData.nodes;
+      gameState.edges = levelData.edges;
+      gameState.maxFuel = levelData.totalFuel;
+      gameState.fuel = levelData.totalFuel;
+      gameState.timer = levelData.timeLimit;
+      gameState.currentRoute = [0];
+      gameState.visitedNodes = new Set([0]);
+      gameState.startTime = Date.now();
+      gameState.startLives = 3;
+      
+      return `
+        <div class="w-full h-full flex flex-col overflow-hidden relative">
+          
+          <!-- UI HUD OVERLAY (Lebih Responsif) -->
+          <div class="absolute inset-0 pointer-events-none flex flex-col justify-between p-2 md:p-4 z-10">
+              
+              <!-- Bagian Atas (Kiri: Bensin & Jarak, Kanan: Waktu & Nyawa) -->
+              <div class="flex justify-between items-start">
+                  
+                  <!-- HUD Kiri -->
+                  <div class="flex flex-col gap-2 pointer-events-auto w-40 md:w-64">
+                      <!-- Indikator Bensin -->
+                      <div class="game-hud shadow-lg">
+                          <div class="font-bold text-xs md:text-sm mb-1 flex justify-between">
+                              <span>⛽ Bensin</span>
+                              <span><span id="uiFuelVal">${gameState.fuel}</span>/${gameState.maxFuel}</span>
+                          </div>
+                          <div class="w-full h-3 md:h-4 bg-gray-700 rounded overflow-hidden border border-gray-500">
+                              <div id="uiFuelBar" class="h-full bg-green-500 transition-all duration-300" style="width: 100%;"></div>
+                          </div>
+                      </div>
+                      
+                      <!-- Info Jarak -->
+                      <div class="game-hud shadow-lg hidden sm:flex flex-col max-h-[30vh] md:max-h-[50vh]">
+                          <div class="text-yellow-400 font-bold mb-2 text-sm border-b border-gray-600 pb-1">📊 Info Jarak Route</div>
+                          <div id="uiDistanceList" class="text-[10px] md:text-xs space-y-1 overflow-y-auto pr-1 custom-scrollbar"></div>
+                      </div>
+                  </div>
+
+                  <!-- HUD Kanan -->
+                  <div class="flex flex-col gap-2 pointer-events-auto items-end">
+                      <!-- Waktu & Nyawa -->
+                      <div class="game-hud shadow-lg text-center w-24 md:w-32">
+                          <div class="font-bold text-lg md:text-2xl text-yellow-300 drop-shadow-md">
+                              ⏱️ <span id="uiTimerVal">${gameState.timer}</span>s
+                          </div>
+                          <div class="text-sm md:text-base mt-1 tracking-widest drop-shadow-md" id="uiLivesVal">❤️❤️❤️</div>
+                      </div>
+                      
+                      <!-- Toggle Label -->
+                      <div class="game-hud shadow-lg text-center w-24 md:w-32 cursor-pointer hover:bg-white/10 transition-colors" onclick="toggleDistanceLabels()">
+                          <div class="text-[10px] md:text-xs mb-2 font-medium">Label Jarak Route</div>
+                          <div class="w-10 md:w-12 h-5 md:h-6 rounded-full mx-auto relative transition-colors duration-300 bg-gray-500" id="uiToggleBtn">
+                              <div class="absolute top-[2px] md:top-1 left-1 w-4 h-4 rounded-full bg-white transition-all duration-300" id="uiToggleKnob"></div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- Bagian Bawah (Tombol Aksi) -->
+              <div class="pointer-events-auto flex flex-wrap justify-center gap-2 mb-4 md:mb-8 w-full max-w-3xl mx-auto drop-shadow-xl">
+                 <button onclick="checkDelivery()" class="flex-1 min-w-[80px] md:min-w-[120px] bg-gradient-to-t from-emerald-600 to-emerald-400 border-2 border-white text-white font-bold py-2 md:py-3 rounded-xl shadow-lg hover:scale-105 transition-transform text-sm md:text-xl active:scale-95">Kirim</button>
+                 <button onclick="resetRoute()" class="flex-1 min-w-[80px] md:min-w-[120px] bg-gradient-to-t from-amber-600 to-amber-400 border-2 border-white text-white font-bold py-2 md:py-3 rounded-xl shadow-lg hover:scale-105 transition-transform text-sm md:text-xl active:scale-95">Reset</button>
+                 <button onclick="goToLevelSelect()" class="flex-1 min-w-[80px] md:min-w-[120px] bg-gradient-to-t from-indigo-600 to-indigo-400 border-2 border-white text-white font-bold py-2 md:py-3 rounded-xl shadow-lg hover:scale-105 transition-transform text-sm md:text-xl active:scale-95">Menu</button>
+              </div>
+          </div>
+          
+          <!-- KANVAS UTAMA -->
+          <div class="absolute inset-0 flex items-center justify-center p-2 z-0">
+             <canvas id="gameCanvas" class="w-full h-full bg-white/70 backdrop-blur-sm rounded-2xl border-4 border-white shadow-2xl"></canvas>
+          </div>
+          
+        </div>
+      `;
+    }
+
+    window.toggleDistanceLabels = function() {
+        gameState.showDistanceLabels = !gameState.showDistanceLabels;
+        const btn = document.getElementById('uiToggleBtn');
+        const knob = document.getElementById('uiToggleKnob');
+        if (btn && knob) {
+            btn.className = `w-10 md:w-12 h-5 md:h-6 rounded-full mx-auto relative transition-colors duration-300 ${gameState.showDistanceLabels ? 'bg-emerald-500' : 'bg-gray-500'}`;
+            knob.className = `absolute top-[2px] md:top-1 w-4 h-4 rounded-full bg-white transition-all duration-300 ${gameState.showDistanceLabels ? 'right-1' : 'left-1'}`;
+        }
+        drawGame();
+    }
+
+    window.populateDistanceInfo = function() {
+        const listEl = document.getElementById('uiDistanceList');
+        if (!listEl) return;
+        listEl.innerHTML = '';
+        
+        const sortedEdges = [...gameState.edges].sort((a, b) => {
+            const nameA = gameState.nodes.find(n => n.id === a.from)?.name || '';
+            const nameB = gameState.nodes.find(n => n.id === b.to)?.name || '';
+            return (nameA + nameB).localeCompare(nameA + nameB);
+        });
+        
+        sortedEdges.forEach(edge => {
+            const fromName = gameState.nodes.find(n => n.id === edge.from)?.name;
+            const toName = gameState.nodes.find(n => n.id === edge.to)?.name;
+            listEl.innerHTML += `<div class="flex justify-between border-b border-gray-600/50 pb-1 mb-1 items-center">
+                <span class="truncate pr-2">${fromName} ↔ ${toName}</span>
+                <span class="text-emerald-400 font-bold ml-auto whitespace-nowrap">${edge.distance} KM</span>
+            </div>`;
+        });
+    }
+
+    window.updateGameUI = function() {
+        const fuelEl = document.getElementById('uiFuelVal');
+        const fuelBar = document.getElementById('uiFuelBar');
+        const timerEl = document.getElementById('uiTimerVal');
+        const livesEl = document.getElementById('uiLivesVal');
+        
+        if (fuelEl) fuelEl.textContent = Math.ceil(gameState.fuel);
+        if (fuelBar) {
+            const percent = Math.max(0, (gameState.fuel / gameState.maxFuel) * 100);
+            fuelBar.style.width = percent + '%';
+            fuelBar.className = `h-full transition-all duration-300 ${percent < 20 ? 'bg-red-500' : percent < 50 ? 'bg-amber-500' : 'bg-emerald-500'}`;
+        }
+        if (timerEl) timerEl.textContent = Math.ceil(gameState.timer);
+        if (livesEl) livesEl.textContent = '❤️'.repeat(gameState.lives) + '🤍'.repeat(3 - gameState.lives);
+    }
+
+    function drawGame() {
+      const canvas = document.getElementById('gameCanvas');
+      if (!canvas) return;
+      
+      const ctx = canvas.getContext('2d');
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      
+      // Dynamic scaling so the graph always fits the screen perfectly
+      const minDimension = Math.min(canvas.width, canvas.height);
+      const uiPadding = window.innerWidth < 768 ? 160 : 250; // Extra padding for overlay UI
+      const availableSize = Math.max(200, minDimension - uiPadding);
+      const scaleFactor = availableSize / 560; 
+      const nodeSize = window.innerWidth < 768 ? 20 : 30;
+      
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw Edges
+      gameState.edges.forEach(edge => {
+        const fromNode = gameState.nodes.find(n => n.id === edge.from);
+        const toNode = gameState.nodes.find(n => n.id === edge.to);
+        
+        const x1 = centerX + (fromNode.x * scaleFactor);
+        const y1 = centerY + (fromNode.y * scaleFactor);
+        const x2 = centerX + (toNode.x * scaleFactor);
+        const y2 = centerY + (toNode.y * scaleFactor);
+        
+        ctx.strokeStyle = '#94a3b8'; // gray-400
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        
+        // Jarak Toggles on canvas
+        if (gameState.showDistanceLabels) {
+          const midX = (x1 + x2) / 2;
+          const midY = (y1 + y2) / 2;
+          const circleRadius = window.innerWidth < 768 ? 14 : 18;
+          
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(midX, midY, circleRadius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#6366f1';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          
+          ctx.fillStyle = '#1e293b';
+          ctx.font = `bold ${window.innerWidth < 768 ? 10 : 12}px Fredoka`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(`${edge.distance}`, midX, midY);
+        }
+      });
+      
+      // Draw Passed Path Route
+      if (gameState.currentRoute.length > 1) {
+        for (let i = 0; i < gameState.currentRoute.length - 1; i++) {
+          const fromId = gameState.currentRoute[i];
+          const toId = gameState.currentRoute[i + 1];
+          const fromNode = gameState.nodes.find(n => n.id === fromId);
+          const toNode = gameState.nodes.find(n => n.id === toId);
+          
+          ctx.strokeStyle = '#10b981'; // emerald-500
+          ctx.lineWidth = window.innerWidth < 768 ? 4 : 6;
+          ctx.beginPath();
+          ctx.moveTo(centerX + (fromNode.x * scaleFactor), centerY + (fromNode.y * scaleFactor));
+          ctx.lineTo(centerX + (toNode.x * scaleFactor), centerY + (toNode.y * scaleFactor));
+          ctx.stroke();
+        }
+      }
+      
+      // Draw Nodes
+      gameState.nodes.forEach(node => {
+        const x = centerX + (node.x * scaleFactor);
+        const y = centerY + (node.y * scaleFactor);
+        const isVisited = gameState.visitedNodes.has(node.id);
+        
+        if (node.type === 'post') {
+          ctx.fillStyle = isVisited ? '#ef4444' : '#f87171'; // Red
+        } else {
+          ctx.fillStyle = isVisited ? '#10b981' : '#34d399'; // Emerald
+        }
+        
+        ctx.beginPath();
+        ctx.arc(x, y, nodeSize, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = window.innerWidth < 768 ? 3 : 4;
+        ctx.stroke();
+        
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${window.innerWidth < 768 ? 9 : 12}px Fredoka`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(node.name, x, y);
+        
+        // Highlight Selected Node
+        if (gameState.selectedNode === node.id) {
+          ctx.strokeStyle = '#fbbf24'; // amber-400
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.arc(x, y, nodeSize + 6, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      });
+    }
+
+    function handleCanvasClick(event) {
+      const canvas = document.getElementById('gameCanvas');
+      if (!canvas) return;
+      
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const uiPadding = window.innerWidth < 768 ? 160 : 250;
+      const availableSize = Math.max(200, Math.min(canvas.width, canvas.height) - uiPadding);
+      const scaleFactor = availableSize / 560; 
+      const nodeSize = window.innerWidth < 768 ? 20 : 30;
+      
+      for (const node of gameState.nodes) {
+        const nodeX = centerX + (node.x * scaleFactor);
+        const nodeY = centerY + (node.y * scaleFactor);
+        const distance = Math.sqrt((x - nodeX) ** 2 + (y - nodeY) ** 2);
+        
+        if (distance <= nodeSize + 10) { // Slight padding for easier touch
+          selectNode(node.id);
+          return;
+        }
+      }
+    }
+
+    window.selectNode = function(nodeId) {
+      if (gameState.currentRoute.length === 0) {
+        gameState.currentRoute.push(0);
+      }
+      
+      const lastNode = gameState.currentRoute[gameState.currentRoute.length - 1];
+      if (nodeId === lastNode) return;
+      
+      const edge = gameState.edges.find(e => (e.from === lastNode && e.to === nodeId) || (e.from === nodeId && e.to === lastNode));
+      if (!edge) {
+        showToast('Tidak ada jalan pintas ke desa ini!', 'error');
+        return;
+      }
+      if (gameState.fuel < edge.distance) {
+        loseLife('Bensin habis!');
+        return;
+      }
+      
+      gameState.fuel -= edge.distance;
+      gameState.currentRoute.push(nodeId);
+      gameState.visitedNodes.add(nodeId);
+      gameState.selectedNode = nodeId;
+      
+      updateGameUI();
+      drawGame();
+    }
+
+    window.checkDelivery = function() {
+      const allVillagesVisited = gameState.nodes
+        .filter(n => n.type === 'village')
+        .every(n => gameState.visitedNodes.has(n.id));
+      
+      const lastNode = gameState.currentRoute[gameState.currentRoute.length - 1];
+      
+      if (!allVillagesVisited) {
+        showToast('Tunggu, belum mengunjungi semua desa!', 'error');
+        return;
+      }
+      if (lastNode !== 0) {
+        showToast('Harus kembali ke Pos Pusat terlebih dahulu!', 'error');
+        return;
+      }
+      
+      completeLevel();
+    }
+
+    window.resetRoute = function() {
+      gameState.currentRoute = [0];
+      gameState.visitedNodes = new Set([0]);
+      gameState.fuel = gameState.maxFuel;
+      gameState.selectedNode = null;
+      updateGameUI();
+      drawGame();
+    }
+
+    function completeLevel() {
+      if (timerInterval) clearInterval(timerInterval);
+      
+      const timeBonus = Math.floor(gameState.timer * 10);
+      const fuelBonus = Math.floor(gameState.fuel * 5);
+      const levelScore = 1000 + timeBonus + fuelBonus;
+      
+      const timeTaken = Math.floor((Date.now() - gameState.startTime) / 1000);
+      const fuelPercent = (gameState.fuel / gameState.maxFuel) * 100;
+      const isPerfect = gameState.lives === gameState.startLives;
+      const levelStats = { timeTaken, fuelPercent, isPerfect };
+      
+      const levelScores = currentUser.level_scores ? JSON.parse(currentUser.level_scores) : {};
+      const previousBestScore = levelScores[gameState.level] || 0;
+      
+      let scoreAdded = 0;
+      let isNewRecord = false;
+      
+      if (levelScore > previousBestScore) {
+        scoreAdded = levelScore - previousBestScore;
+        currentUser.total_score += scoreAdded;
+        levelScores[gameState.level] = levelScore;
+        currentUser.level_scores = JSON.stringify(levelScores);
+        isNewRecord = true;
+      }
+      
+      currentUser.current_level = Math.max(currentUser.current_level, gameState.level + 1);
+      const completedMissions = currentUser.completed_missions ? JSON.parse(currentUser.completed_missions) : [];
+      completedMissions.push(gameState.level);
+      currentUser.completed_missions = JSON.stringify(completedMissions);
+      
+      checkBadges(currentUser, levelStats);
+      gameState.lives = 3;
+      showSuccessModal(levelScore, timeBonus, fuelBonus, scoreAdded, isNewRecord, previousBestScore);
+    }
+    
+    function showSuccessModal(levelScore, timeBonus, fuelBonus, scoreAdded, isNewRecord, previousBestScore) {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      
+      let recordMessage = '';
+      if (isNewRecord) {
+        if (previousBestScore === 0) {
+          recordMessage = `<p style="font-size: 18px; color: #10b981; margin: 10px 0; font-weight: bold;">✨ Level Terselesaikan!</p>`;
+        } else {
+          recordMessage = `<p style="font-size: 18px; color: #f59e0b; margin: 10px 0; font-weight: bold;">🎯 REKOR BARU! (Sebelumnya: ${previousBestScore})</p>`;
+        }
+      } else {
+        recordMessage = `<p style="font-size: 18px; color: #64748b; margin: 10px 0;">Skor Terbaik: ${previousBestScore}</p>`;
+      }
+      
+      modal.innerHTML = `
+        <div class="modal-content">
+          <img src="oke.png" alt="Berhasil" class="success-image drop-shadow-lg" onerror="this.outerHTML='<div class=\\'success-emoji\\'>🎉</div>';">
+          <h2 style="font-size: 36px; font-weight: bold; color: #10b981; margin: 20px 0;">Paket Telah Terkirim!</h2>
+          <div style="background: #f0fdf4; border-radius: 15px; padding: 20px; margin: 20px 0; border: 2px solid #a7f3d0;">
+            <p style="font-size: 24px; font-weight: bold; color: #2d3748; margin: 10px 0;">Skor: <span style="color: #10b981;">${levelScore}</span></p>
+            <div style="font-size: 16px; color: #475569; margin-top: 15px; font-weight: 500;">
+              <p style="margin: 5px 0;">⏱️ Bonus Waktu: +${timeBonus}</p>
+              <p style="margin: 5px 0;">⛽ Bonus Bensin: +${fuelBonus}</p>
+            </div>
+            ${recordMessage}
+            ${scoreAdded > 0 ? `<p style="font-size: 20px; color: #059669; margin: 10px 0; font-weight: bold;">Skor Bertambah: +${scoreAdded}</p>` : ``}
+          </div>
+          <button onclick="this.closest('.modal-overlay').remove(); gameState.screen = 'levelSelect'; render();" class="btn-primary text-white px-8 py-3 rounded-xl text-lg font-bold hover:scale-105 transition-transform" style="margin-top: 20px;">
+            MENU LEVEL
+          </button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function loseLife(reason) {
+      if (timerInterval) clearInterval(timerInterval);
+      gameState.lives--;
+      updateGameUI();
+      
+      if (reason === 'Bensin habis!') {
+        showFuelOutModal();
+      } else {
+        showToast(reason, 'error');
+        if (gameState.lives <= 0) {
+          gameOver();
+        } else {
+          resetRoute();
+          startTimer();
+        }
+      }
+    }
+    
+    function showFuelOutModal() {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal-content">
+          <img src="sad.png" alt="Gagal" class="fail-image drop-shadow-lg" onerror="this.outerHTML='<div class=\\'fail-emoji\\'>😢</div>';">
+          <h2 style="font-size: 36px; font-weight: bold; color: #ef4444; margin: 20px 0;">Yah, Bensin Habis!</h2>
+          <p style="font-size: 24px; color: #64748b; margin: 10px 0;">Motor Mogok</p>
+          <div style="background: #fef2f2; border-radius: 15px; padding: 20px; margin: 20px 0; border: 2px solid #fecaca;">
+            <p style="font-size: 18px; color: #2d3748; font-weight:bold;">
+              Sisa Nyawa: <span style="font-size: 24px; letter-spacing: 5px;">${'❤️'.repeat(gameState.lives)}${'🤍'.repeat(3 - gameState.lives)}</span>
+            </p>
+          </div>
+          <button onclick="this.closest('.modal-overlay').remove(); if(gameState.lives<=0){gameState.lives=3; gameState.screen='levelSelect'; render();}else{resetRoute();startTimer();}" class="btn-primary text-white px-8 py-3 rounded-xl text-lg font-bold hover:scale-105 transition-transform" style="margin-top: 20px;">
+            ${gameState.lives > 0 ? 'COBA LAGI' : 'KEMBALI'}
+          </button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function gameOver() {
+      showToast('Game Over! Nyawa habis.', 'error');
+      setTimeout(() => {
+        gameState.lives = 3;
+        gameState.screen = 'levelSelect';
+        render();
+      }, 2000);
+    }
+
+    let timerInterval = null;
+
+    function startTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        gameState.timer--;
+        updateGameUI();
+        if (gameState.timer <= 0) {
+          clearInterval(timerInterval);
+          loseLife('Waktu habis!');
+        }
+      }, 1000);
+    }
+
+    window.goToAuth = function() { gameState.screen = 'auth'; render(); };
+    window.goToMenu = function() { if (timerInterval) clearInterval(timerInterval); gameState.screen = 'menu'; render(); };
+    window.goToLevelSelect = function(diff) { 
+        if(diff) gameState.difficulty = diff;
+        gameState.screen = 'levelSelect'; 
+        render(); 
+    };
+
+    window.startLevel = function(levelNum) {
+      gameState.level = levelNum;
+      gameState.lives = 3;
+      gameState.screen = 'game';
+      render();
+      
+      setTimeout(() => {
+        populateDistanceInfo();
+        updateGameUI();
+        drawGame();
+        startTimer();
+        
+        const canvas = document.getElementById('gameCanvas');
+        if (canvas) canvas.addEventListener('click', handleCanvasClick);
+        window.addEventListener('resize', drawGame);
+      }, 100);
+    }
+
+    window.logout = function() { currentUser = null; gameState.screen = 'splash'; render(); };
+
+    function render() {
+      const app = document.getElementById('app');
+      switch (gameState.screen) {
+        case 'splash': app.innerHTML = renderSplash(); break;
+        case 'auth': app.innerHTML = renderAuth(); attachAuthListener(); break;
+        case 'menu': app.innerHTML = renderMenu(); break;
+        case 'levelSelect': app.innerHTML = renderLevelSelect(); break;
+        case 'game': app.innerHTML = renderGame(); break;
+      }
+    }
+
+    async function onConfigChange(config) {
+      document.getElementById('footerText').textContent = config.footer_text || defaultConfig.footer_text;
+      const fontFamily = config.font_family || defaultConfig.font_family;
+      const fontSize = config.font_size || defaultConfig.font_size;
+      document.body.style.fontFamily = `${fontFamily}, sans-serif`;
+      document.body.style.fontSize = `${fontSize}px`;
+      render();
+    }
+
+    async function init() {
+      if (window.elementSdk) {
+        window.elementSdk.init({
+          defaultConfig,
+          onConfigChange,
+          mapToCapabilities: (config) => ({
+            recolorables: [
+              { get: () => config.primary_color || defaultConfig.primary_color, set: (value) => { config.primary_color = value; window.elementSdk.setConfig({ primary_color: value }); } },
+              { get: () => config.secondary_color || defaultConfig.secondary_color, set: (value) => { config.secondary_color = value; window.elementSdk.setConfig({ secondary_color: value }); } },
+              { get: () => config.accent_color || defaultConfig.accent_color, set: (value) => { config.accent_color = value; window.elementSdk.setConfig({ accent_color: value }); } },
+              { get: () => config.background_color || defaultConfig.background_color, set: (value) => { config.background_color = value; window.elementSdk.setConfig({ background_color: value }); } },
+              { get: () => config.text_color || defaultConfig.text_color, set: (value) => { config.text_color = value; window.elementSdk.setConfig({ text_color: value }); } }
+            ],
+            borderables: [],
+            fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: (value) => { config.font_family = value; window.elementSdk.setConfig({ font_family: value }); } },
+            fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: (value) => { config.font_size = value; window.elementSdk.setConfig({ font_size: value }); } }
+          }),
+          mapToEditPanelValues: (config) => new Map([
+            ['game_title', config.game_title || defaultConfig.game_title],
+            ['start_button_text', config.start_button_text || defaultConfig.start_button_text],
+            ['login_title', config.login_title || defaultConfig.login_title],
+            ['footer_text', config.footer_text || defaultConfig.footer_text]
+          ])
+        });
+      }
+      render();
+    }
+
+    init();
+  </script>
+ </body>
+</html>
